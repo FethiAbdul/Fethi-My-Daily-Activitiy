@@ -1,0 +1,389 @@
+---
+title: "QMM1002 Case Study 1 FethiAbdulmenan"
+author: "Fethi Abdulmenan"
+date: "2024-10-20"
+output:
+  html_document: 
+    default: true
+  pdf_document: 
+    default: true
+  word_document: 
+    default: true
+extra_dependencies: 
+  - xcolor
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Case Study 1
+
+```{r include=FALSE}
+pd<-read.csv(file="Abdulmenan,Fethi Personalized Data.csv",header = TRUE)
+head(pd)
+```
+
+## Introduction
+
+As a full-time student balancing part-time work, I constantly juggle multiple responsibilities. To gain a better understanding of how I manage my time and how my daily activities relate to one another, I conducted a self-study over two semesters. Semester 1 spanned from May 10, 2024, to August 13, 2024, while Semester 2 began on September 9, 2024, and is ongoing as of October 17, 2024. The personalized data set included both quantitative and qualitative variables. These variables are:
+
+| Variable                 | Description                                                        | Type                |
+|-----------------|--------------------------------------|-----------------|
+| Date(time)               | Date of data collection                                            | Identifier          |
+| Class(hours)             | Records the time i spend attending lectures or labs                | Quantitative        |
+| Study(hours)             | Records time I dedicated to academic work outside of Class         | Quantitative        |
+| Sleep(hours)             | Records the amount of sleep I get each night(hours)                | Quantitative        |
+| Cup of Coffee( cups)     | Records my coffee consumption habits( cups)                        | Quantitative        |
+| News(Yes/No)             | Records whether I watched the news or not                          | Nominal Categorical |
+| Excercise                | Indicates type of exercise i am practicing that day                | Nominal Categorical |
+| Mood(1to5)               | Reflects my overall emotional state on a scale of 1(very poor to 5 | Ordinal Scale       |
+| Emails( count of emails) | Represents the number of Emails I send or receive daily            | Quantitative        |
+| Semester(count)          | Categorize data into groups                                        | Qualitative         |
+
+: Dataset Description
+
+In this report, I will analyze three quantitative variables: study hours, sleep hours, and the number of emails I send or receive daily. As someone returning to academics after a few years off, establishing a study routine has been a critical goal. I have historically struggled with procrastination, and developing a regular study routine is essential for academic success. During Semester 1, I was able to create a successful and well-managed time routine, and I want to assess whether that routine carried over into Semester 2.Another primary concern has been managing sleep. Although I understand the importance of sleep for health and productivity, I often struggle with insomnia, especially during the weekdays, and feel exhausted by the end of the week. Last year, I managed to maintain a reasonably healthy average of around 7 hours of sleep per night, and I want to evaluate whether that habit has continued into Semester 2 and assess how my sleep patterns have evolved throughout the year. Additionally, I want to investigate how emails, particularly those related to work, impact my daily routine. During the weekdays, emails keep me busy, but I make a conscious effort to disconnect on weekends by avoiding emails altogether. Emails were a source of stress for me during the first half of Semester 1, but after making some changes in how I manage them, I had a better handle on the situation in the second half of Semester 1. I want to determine if this improved trend is continuing in Semester 2.
+
+To explore these aspects, I have focused on the following three main questions, which will serve as the primary goals of this report:
+
+### Report Goals
+
+1.  What do you do in a day?
+
+2.  Do you spend your days how you expect?
+
+3.  Is any difference in how you spend your time this semester compared to last semester
+
+To analyze this personalized data, I will employ various statistical methods. I will use confidence intervals to estimate the ranges for my average study hours and sleep patterns. I will conduct hypothesis testing to assess whether my study hours, sleep patterns, and email-related activities differ significantly from my expectations. Additionally, I will apply two-sample tests to compare how I spend my time across Semester 1 and Semester 2, using the appropriate test, whether that be a two-sample t-test, pooled test, or paired test.
+
+By analyzing this data, I hope to gain deeper insights into how I spend my time each day and whether my expectations align with reality. Additionally, I want to identify any differences in how I spend my time between Semester 1 and Semester 2 and use these insights to better manage my time and daily activities going forward.
+
+### Summary Statistics
+
+```{r include=FALSE}
+fethi.3vars<-subset(pd, select=c("Study","Sleep","Emails"))
+summary(fethi.3vars)
+```
+
+```{r include=FALSE}
+# measuring standard deviation
+sd_study<-sd(pd$Study)
+sd_sleep<-sd(pd$Sleep)
+sd_emails<-sd(pd$Emails)
+
+sd_study
+sd_sleep
+sd_emails
+
+mean_study<-mean(pd$Study)
+mean_sleep<-mean(pd$Sleep)
+mean_emails<-mean(pd$Emails)
+
+mean_study
+mean_sleep
+mean_emails
+
+```
+
+| Variable     | Mean            | Standard Deviation |
+|--------------|-----------------|--------------------|
+| Study(hours) | `r mean_study`  | `r sd_study`       |
+| Sleep(hours) | `r mean_sleep`  | `r sd_sleep`       |
+| Email(qty)   | `r mean_emails` | `r sd_emails`      |
+
+: summary statistics
+
+The average hours i spend studying is `r round(mean_study,2)` with a standard deviation of `r round(sd_study)`
+
+The average hours i spend sleeping is `r round(mean_sleep,2)` with a standard deviation or `r round(sd_sleep)`
+
+The average hours i spend sending or receiving Emails is `r round(mean_emails,2)` with a standard deviation of `r round(sd_emails,2)`
+
+### Conditions
+
+How do my quantitative variables behave? do they meet the conditions for using descriptive statistical methods like hypothesis test and conditional intervals?
+
+We will check the four conditions required to use the t-distribution for each or our variables:
+
+#### Study Hours
+
+```{r include=FALSE}
+hist(pd$Study, xlab="Hours of study", main="Distribution of Daily Study Hours", border='white' ,col ='#82a6e0')
+boxplot(pd$Study, main="Distribution of Daily Study Hours",ylim=c(0,8), border = 'brown', col='#82a6e0')
+shapiro.test(pd$Study)
+library(ggplot2)
+
+
+```
+
+The histogram appears uni-modal and somewhat normally distributed with a slight skewness to the left (negatively skewed) with most of the data points clustering around the middle and upper study hours (2-6 hours).The box plot appears to be relatively symmetrical with the median line almost in the middle , suggesting that the distribution of study hours is balanced around the median.There are no outliers indicated in this box plot.
+
+One interesting observation is that the lower whisker is longer than the upper whisker. We can infer from this that the data points in the lower quartile(Q1) are more spread out than those in the upper quartile(Q3). This probably makes sense because I study for 6 hours daily on weekends consistently but only 4 hours on most weekdays.
+
+##### Conditions of Validity for T-tests and confidence Intervals
+
+1.  **Independence:** My study hours are essentially random, so I don’t foresee any issues with independence. Each day’s study time doesn’t affect the next, meaning the data points are independent of one another. The condition is met
+
+2.  **Randomization**: Although my data wasn’t randomly selected, I can introduce randomization through sampling. By taking a random sample from my data set, I can add an element of randomness, making the analysis more valid. This allows me to perform meaningful tests like t-tests and confidence intervals, which typically assume random sampling
+
+3.  **10% Condition:** Since I recorded my study hours for only a small number of days, and there are many more days in a semester or year, this condition is satisfied. My data represents just a small portion of all the possible days I could have studied, so it meets the requirement.
+
+4.  **Nearly Normal Condition:** The histogram of daily study hours appears to be uni modal and somewhat follows a normal distribution with a very slight left skew (negative skewness). The box plot shows that the median is positioned slightly closer to the top quartile (Q3), but it still indicates a relatively symmetrical distribution. The IQR is approximately 3 hours, meaning that the middle 50% of my daily study hours fall within a range of 3 to 5 hours. Additionally, there are no visible outliers in either the histogram or the box plot. The lower whisker of the boxplot is longer than the upper whisker indicating that the data points below the lower quartile(Q1) are more spread out than those above the upper quartile(Q3) To further investigate, we performed the Shapiro-Wilk test. The Shapiro-Wilk test gave a result of W = 0.92362 and a p-value = 0.03769, which is less than the alpha value of 0.05. This suggests that the data isn't perfectly normal. However, since I am working with a small sample size, the Shapiro-Wilk test can be very sensitive and potentially flag small deviations. Given that the histogram appears reasonably normally distributed, and the box plot is symmetric with no outliers, we can reasonably assume that the data is close enough to normal for conducting a t-test and confidence interval analysis. The condition for near normality is met.
+
+#### Sleep Hours
+
+```{r include=FALSE}
+hist(pd$Sleep, xlab="Hours of Sleep", main="Distdribution of Daily Sleep Hours",breaks = 7 ,border='white' ,col ='darkgreen')
+boxplot(pd$Sleep, main="Distribution of Daily Sleep Hours", border = 'black', col='darkgreen')
+shapiro.test(pd$Sleep)
+```
+
+The histogram of daily sleep hours appears to be unimodal and somewhat follows a normal distribution with a slight left skew (negative skewness). The boxplot shows that the median is positioned slightly closer to the bottom quartile (Q1), but it still indicates a relatively symmetrical distribution. One interesting observation is that there is one visible outlier below the lower bound, identified as a sleep time of 4 hours. Upon further reflection, I can see that on 03-Jun-24, I only had 4 hours of sleep, which was the night I was prepping for a new job interview the next day. This personal event explains the outlier and shows how my daily activities can impact sleep variability.
+
+##### Conditions of Validity for T-tests and confidence Intervals
+
+1.  **Independence:**My sleep hours are essentially random, so I don’t foresee any issues with independence. Each day’s sleep time doesn’t affect the next, meaning the data points are independent of one another. The condition is met
+
+2.  **Randomization**:: Although my data wasn’t randomly selected, I can introduce randomization through sampling. By taking a random sample from my dataset, I can add an element of randomness, making the analysis more valid. This allows me to perform meaningful tests like t-tests and confidence intervals, which typically assume random sampling
+
+3.  **10% condition**:Since I recorded my Sleep hours for only a small number of days, and there are many more days in a semester or year, this condition is satisfied. My data represents just a small portion of all the possible days, so it meets the requirement
+
+4.  **Nearly Normal Condition:**The histogram of daily sleep hours appears to be unimodal and somewhat follows a normal distribution with a slight left skew (negative skewness). The boxplot shows that the median is positioned slightly closer to the bottom quartile (Q1), but it still indicates a relatively symmetrical distribution. The IQR is approximately 1.5 hours, meaning that the middle 50% of my daily sleep hours fall within a range of 6.5 to 8 hours. Additionally, there is one visible outlier below the lower bound, identified as a sleep time of 4 hours. The lower whisker of the boxplot is longer than the upper whisker, indicating that the data points below the lower quartile (Q1) are more spread out than those above the upper quartile (Q3).
+
+    To further investigate, we performed the Shapiro-Wilk test. The Shapiro-Wilk test gave a result of W = 0.89635 and a p-value = 3.14e-08, which is much less than the alpha value of 0.05. This suggests that the data isn't perfectly normal. However, since I am working with a larger sample size, the Shapiro-Wilk test can be very sensitive and may flag small deviations even when the data is close to normal.
+
+    Given that the histogram appears reasonably normally distributed, and the boxplot is relatively symmetric with only one outlier, we can reasonably assume that the data is close enough to normal for conducting a t-test and confidence interval analysis. The condition for near-normality is met.
+
+#### Emails
+
+```{r include=FALSE}
+hist(pd$Emails, xlab="Number of Emails", main="Distdribution of Daily Emails ", border='black' ,col ='yellow')
+boxplot(pd$Emails, main="Distribution of Daily Emails ", border = 'black', col='yellow')
+shapiro.test(pd$Emails)
+```
+
+The histogram of daily emails appears to be uni modal and somewhat follows a normal distribution with a slight right skew (positive skewness). The box plot shows that the median is positioned roughly in the center of the interquartile range (IQR), indicating a relatively symmetrical distribution.
+
+##### Conditions of Validity for T-tests and confidence Intervals
+
+1.  **Independence:**My Number of Emails I send or receive are essentially random, so I don’t foresee any issues with independence. Each day’s Email number or quantity doesn’t affect the next, meaning the data points are independent of one another. The condition is met
+
+2.  **Randomization**: Although my data wasn’t randomly selected, I can introduce randomization through sampling. By taking a random sample from my data set, I can add an element of randomness, making the analysis more valid. This allows me to perform meaningful tests like t-tests and confidence intervals, which typically assume random sampling
+
+3.  **10% condition**:Since I recorded my Emails hours for only a small number of days, and there are many more days in a semester or year, this condition is satisfied. My data represents just a small portion of all the possible days, so it meets the requirement
+
+4.  **Nearly Normal Condition:**The histogram of daily emails appears to be uni modal and somewhat follows a normal distribution with a slight right skew (positive skewness). The boxplot shows that the median is positioned roughly in the center of the interquartile range (IQR), indicating a relatively symmetrical distribution. The IQR is approximately 4 emails, meaning that the middle 50% of my daily emails fall within a range of 4 to 8 emails. Additionally, there are no visible outliers in either the histogram or the box plot. The whiskers of the box plot are of almost equal length, though the right whisker is slightly longer, indicating that the data points above the upper quartile (Q3) are more spread out than those below the lower quartile (Q1).
+
+    To further investigate, we performed the Shapiro-Wilk test. The Shapiro-Wilk test gave a result of W = 0.93428 and a p-value = 5.838e-06, which is much less than the alpha value of 0.05. This suggests that the data isn't perfectly normal. However, since I am working with a larger sample size, the Shapiro-Wilk test can be very sensitive and may flag small deviations from normality even when the data is close to normal.
+
+    Given that the histogram appears reasonably normally distributed, and the boxplot shows no outliers with a slight skew, we can reasonably assume that the data is close enough to normal for conducting a t-test and confidence interval analysis. The condition for near-normality is met.
+
+## Data Analysis
+
+### Part 1: Confidence Intervals
+
+#### Study Hours
+
+```{r include=FALSE}
+#Hide all output but extract the confidence interval from this in the #interpreration below
+pf.conf<-t.test(pd$Study, conf.level = 0.95)
+pf.conf
+```
+
+The 95% confidence interval for my average study hours is between 3.63 and 4.2 hours, meaning I can be 95% confident that my true average study time falls within this range. The t-test results confirm that I am consistently studying close to 4 hours per day, with an average of 3.92 hours. My goal is to study between 3 and 4 hours daily, and the analysis shows I am either meeting or slightly exceeding that target. The lower bound of the confidence interval (3.63 hours) is above my minimum goal, and the upper bound (4.2 hours) is just over my maximum goal, indicating I’m managing my study time effectively, even though I may sometimes feel like I'm not studying enough.
+
+The standard deviation of 1.66 suggests moderate variability in my daily study hours, but the relatively narrow confidence interval shows this variation is not extreme. While my current routine aligns well with my goals, I could focus on reducing day-to-day variability to create even more consistency, especially on days with heavier class loads. For example, I typically study for 6 hours each day over the weekend. Spreading those hours more evenly throughout the week could help me balance my time more effectively, allowing me to meet my study goals while also having more time for other activities, like sleep and relaxation
+
+#### Sleep Hours
+
+```{r include=FALSE}
+#Hide all output but extract the confidence interval from this in the #interpreration below
+pf.conf<-t.test(pd$Sleep, conf.level = 0.95)
+pf.conf
+```
+
+The 95% confidence interval for my sleep hours is between 6.71 and 7.46 hours. This means that I can be 95% confident that my true mean sleep hours per night falls within this range. My mean sleep time is 7.09 hours, which falls within this interval. The relatively narrow confidence interval range of 6.71 to 7.46 shows that there is not a lot of variability in my sleep habits and i am getting around 7 hours of sleep each night consistently. The standard deviation for my sleep hours measures the variability in my sleep data. A standard deviation of 0.99 means that on average, my sleep pattern deviates by only about 1 hours from the mean ,which is relatively small and reinforces the findings from the confidence interval range that my sleep hours are consistently around the 7 hour with very little variation. My goal of getting 7 to 8 hours of sleep per day and based on the confidence interval and mean, my sleep routine seems well within a healthy range, showing consistency around 7 hours of sleep per night. I am satisfied with your current sleep habits.
+
+#### Emails I Receive or Send
+
+```{r include=FALSE}
+#extract the confidence interval 
+pf.conf<-t.test(pd$Emails, conf.level = 0.95)
+pf.conf
+```
+
+The 95% confidence interval for the mean number of Emails per day is between 4.59 hours and 7.34 hours. We can be 95% confident that the true mean number of Emails per day lies within this range. My mean of 5.97 emails per day falls within this range. The relatively high standard deviation of 3.62 means that the number of emails I receive or send varies by about 3.62 emails from the mean, indicating considerable day-to-day fluctuations. Some days, especially when I’m working part-time, I handle significantly more emails, while on non-work days, the count is much lower. This variability aligns with my part-time work routine, where email activity spikes on workdays and drops on days off.
+
+Emails don’t overwhelm me in terms of quantity, but they do keep me busy during weekdays, while I try to disconnect from work and emails over the weekend. Since most of my emails are work-related, I spend a significant amount of time managing work matters through email, which can occasionally lead to stress and make time management more challenging.
+
+### Part 2: One-Sample Hypothesis Tests
+
+#### Study Hours
+
+I conducted a one-sample t-test to determine whether my average study hours per day is greater than 3.13 hours. The null and alternative hypotheses are as follows:
+
+$H_0: \mu = 3.13$
+
+$H_A: \mu > 3.13$
+
+```{r include=FALSE}
+t.test(pd$Study, mu = 3.13,alternative = "greater")
+```
+
+Since the p-value = 0.01245 is significantly less than the alpha value of 0.05, we reject the null hypothesis. There is strong evidence to conclude that my true mean study hours per day is greater than 3.13 hours. Based on this result, I can confidently say I study more on average than a McGill student, who studies an average of 3.13 hours per day.
+
+#### Sleep Hours
+
+I conducted a two sided t-test to determine whether my average sleep hours per day is not equal to 7 hours. The null and alternative hypotheses are as follows:
+
+$H_0: \mu = 7$
+
+$H_A: \mu \neq 7$
+
+```{r include=FALSE}
+t.test(pd$Sleep, mu = 7, alternative = "two.sided", conf.level = 0.95)
+```
+
+Since the p-value of 0.6433 is much greater than the significance level of 0.05, we fail to reject the null hypothesis. There is not enough evidence to conclude that my mean sleep hours per night is different from 7 hours. Therefore, i can infer that i sleep on average about 7 hours per day, with no significant evidence to suggest it is either higher or lower than 7 hours.
+
+#### Emails I Receive or Send
+
+I conducted a one-sample t-test to determine whether the average number of Emails i receive or send per day is greater than 3 The null and alternative hypotheses are as follows:
+
+$H_0: \mu = 3$
+
+$H_A: \mu > 3$
+
+```{r include=FALSE}
+t.test(pd$Emails, mu = 3, alternative = "greater", conf.level = 0.95)
+```
+
+Since the p-value is much smaller than the alpha value of 0.05, we reject the null hypothesis. There is strong evidence to suggest that the mean number of emails I handle each day is significantly greater than 3. Based on the results, I can confidently conclude that I send or receive considerably more than 3 emails per day, with an average closer to 6.70 emails.
+
+Given that I work part-time and study full-time, it is likely that on workdays, I handle more emails compared to non-workdays, where the number may be lower.
+
+### Part 3: Two-Sample Hypothesis Tests
+
+#### Part 3.1
+
+I Created two subsets of my personalized data set. One subset for semester 1 data (S1) and one subset for semester 2 data (S2).
+
+```{r include=FALSE}
+#create subsets by term
+S1<-subset(pd , Semester=="S1")
+S2<-subset(pd, Semester=="S2")
+
+
+# Create boxplot for Study hours by semester using the correct formula
+boxplot(pd$Study ~ pd$Semester, col = c("blue", "green"), outcol = "red", ylab = "Study Hours", main = "Study Hours by Semester")
+
+# Create histograms for each group
+hist(S1$Study, main = "Semester 1", xlab = "Study Hours", ylab = "Frequency", col = "green")
+
+hist(S2$Study,breaks = 4, main = "Semester 2", xlab = "Study Hours", ylab = "Frequency", col = "blue")
+
+
+  
+
+```
+
+##### Conditions of Validity for Two-Sample Hypothesis Tests
+
+1.  **Independence:**The two groups, Semester 1 and Semester 2, are independent, as the study hours in one semester do not affect the other, which meets the independence assumption
+
+2.  **Randomization**:: Although my data wasn’t randomly selected, I can introduce randomization through sampling. By taking a random sample from my data set, I can add an element of randomness, making the analysis more valid.
+
+3.  **10% condition**:We usually don’t check this condition for differences of means unless the population is extremely small or the sample is extremely large.
+
+4.  **Nearly Normal Condition:**The histogram for Semester 1 (S1) shows a uni-modal distribution with a peak around 2-3 hours The histogram for S1 seems to be normally distributed with a very slight right skew. Semester 2 (S2) also shows a uni-modal distribution with a peak around 3-4 hours. The histogram for S2 appears somewhat normally distributed but has a few gaps giving it an irregular shape which we assume is due to fewer data points.
+
+    In the boxplots, the median line in S1 is centered in the middle the IQR box, indicating symmetry. The whiskers are of equal length, showing that the data is evenly distributed both within and outside the IQR. In S2, the median line is closer to the upper quartile (Q3), indicating a right-skewed distribution. The upper whisker is longer, reflecting more spread in the upper 25%, while most of the data is concentrated in the lower range.
+
+    Overall, S1 appears more symmetric and closer to normality than S2, but given the smaller sample size in S2, we can conclude that normality is reasonably met for both groups.
+
+5.  **Independent groups Assumption:** The study hours in semester 1 do not influence the study hours of semester 2. This condition is met.
+
+#### Part 3.2
+
+From your subsets, I created two new variables by selecting a random sample of 10 days from semester 1 (S1) and 10 days from semester 2 (S2). The hypothesis test I performed aims to determine whether I spent more time studying per day during Semester 1 compared to Semester 2.The null and alternative hypotheses are as follows:
+
+$H_0: \mu_1 - \mu_2$ = 0
+
+$H_A: \mu_1 - \mu_2$ \> 0
+
+Ideally, I would have used a paired t-test for this analysis since I am comparing my own study hours across two different semesters. This would naturally pair data points from S1 and S2 (e.g., comparing Monday in S1 with Monday in S2). Such pairing satisfies the assumptions of a paired test, where the samples are related (dependent) and the focus is on the differences between paired observations.
+
+However, due to incomplete data for Semester 2, I cannot match study hours day-by-day, making the paired t-test impractical in this case. As a result, I used Welch's two-sample t-test, which is better suited for comparing independent samples with unequal variances. While a paired t-test would be ideal for fully matched data, Welch’s t-test is the best option for analyzing the independent random samples I currently have.
+
+```{r include=FALSE}
+#part 3.2 - create a random sample of 10 days from each subset
+S1_sample<-sample(S1$Study, 10)
+S2_sample<-sample(S2$Study, 10)
+
+t.test(S1_sample, S2_sample, alternative = "greater", var.equal = FALSE)
+
+```
+
+Since the p-value (0.4022) is greater than the significance level = 0.05, we fail to reject the null hypothesis. There is no strong evidence to that I spent more time studying per day during Semester 1 compared to Semester 2 based on this random sample.
+
+#### Part 3.3
+
+In this step, I created new variables by selecting the first 10 days of observations from Semester 1 (S1) and the first 10 days of observations from Semester 2 (S2). I then tested the hypothesis that I spent more time studying per day during Semester 1 compared to Semester 2.
+
+The hypothesis test I performed aims to determine whether I spent more time studying per day during Semester 1 first 10 days compared to Semester 2 first 10 days.The null and alternative hypotheses are as follows:
+
+$H_0: \mu_1 - \mu_2$ = 0
+
+$H_A: \mu_1 - \mu_2$ \> 0
+
+```{r include=FALSE}
+
+# Select the first 10 days from each semester
+S1_first10 <- S1[1:10, "Study"]
+S2_first10 <- S2[1:10, "Study"]
+library(reshape2)
+library(ggplot2)
+# Create a data frame for the first 10 days
+days <- 1:10
+study_data <- data.frame(
+  Day = days,
+  Semester_1 = S1_first10,
+  Semester_2 = S2_first10
+)
+
+# Melt the data into long format
+study_data_melted <- melt(study_data, id.vars = "Day", 
+                          measure.vars = c("Semester_1", "Semester_2"),
+                          variable.name = "Semester", value.name = "Hours")
+
+# Create a bar plot for comparing study hours between Semester 1 and Semester 2
+ggplot(study_data_melted, aes(x = factor(Day), y = Hours, fill = Semester)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Day", y = "Study Hours", 
+       title = "Study Hours Comparison Between Semester 1 and Semester 2")
+
+ggplot(study_data_melted, aes(x = Day, y = Hours, color = Semester)) +
+  geom_point(size = 3) +  # Points for each study hour
+  geom_line(aes(group = Semester), size = 1) +  # Connect points for each semester
+  labs(x = "Day", y = "Study Hours", 
+       title = "Study Hours Comparison Between Semester 1 and Semester 2") 
+
+
+# Perform a paired t-test
+t.test(S1_first10, S2_first10, alternative = "greater", paired = TRUE)
+```
+
+The p-value of 0.05569 is slightly higher than the significance level of α=0.05\\alpha = 0.05α=0.05. Therefore, we fail to reject the null hypothesis. There is not enough strong evidence to conclude that I spent more time studying per day during Semester 1 compared to Semester 2.
+
+This result is consistent with the patterns observed in both the bar plot and line plot. Both visualizations show fluctuations in study hours across the first 10 days for both semesters, with neither semester showing a clear or consistent dominance in study hours. Additionally, there is no clear upward or downward trend over the days for either semester, as study hours fluctuate significantly.
+
+This variability is understandable, especially at the beginning of the term, when I am likely adjusting to a new schedule and balancing various academic and personal commitments.
+
+## Conclusion
+
+After analyzing my personal data, I’ve gained valuable insights into how I spend my time each day. This analysis has allowed me to determine whether my daily routines align with my expectations and if there are differences in how I manage my time between semesters. The analysis revealed that I study an average of 3.92 hours per day, with a low to moderate standard deviation of 1.67. I sleep nearly 7 hours a day, with a low standard deviation of 0.84, and I handle around 6.7 emails daily, with a higher standard deviation of 3.5. I expected to study between 3 and 4 hours daily, and the analysis shows that I’m either meeting or slightly exceeding that target. The confidence interval indicates that I’m managing my study time effectively, though I could work on reducing daily variability for greater consistency, particularly on heavy class load days.When comparing Semester 1 and Semester 2, the statistical analysis showed no significant difference in my study time between the two semesters, despite my expectation that Semester 2 might show an increase due to a heavier workload.
+
+I’ve maintained a healthy and consistent sleep pattern, averaging close to 7 hours per night, which aligns with my expectation of getting 7 to 8 hours of sleep. It’s reassuring to see that this habit has continued from Semester 1 to Semester 2. However, I hoped to handle fewer emails after making adjustments in Semester 1, but the analysis shows a similar trend in Semester 2.
+
+Overall, this review has shown that my study hours align with my goals, even though I sometimes feel like I’m not studying enough. I’ve also verified that my sleep patterns remain steady, giving me peace of mind about maintaining a good work-life balance. Although managing work-related emails remains stressful during the weekdays, I’ve been successful in disconnecting from them on weekends. This analysis has given me a clearer picture of how I spend my time and highlighted areas for improvement, such as reducing the daily fluctuations in my study hours to increase efficiency and time management.
